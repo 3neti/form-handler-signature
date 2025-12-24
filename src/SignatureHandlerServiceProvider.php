@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace LBHurtado\FormHandlerSignature;
 
 use Illuminate\Support\ServiceProvider;
+use LBHurtado\FormHandlerSignature\Console\InstallSignatureHandlerCommand;
 
 /**
  * Signature Handler Service Provider
@@ -35,6 +36,13 @@ class SignatureHandlerServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register console commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                InstallSignatureHandlerCommand::class,
+            ]);
+        }
+        
         // Publish configuration
         $this->publishes([
             __DIR__.'/../config/signature-handler.php' => config_path('signature-handler.php'),
