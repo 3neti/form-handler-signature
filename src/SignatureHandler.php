@@ -30,7 +30,7 @@ class SignatureHandler implements FormHandlerInterface
         
         // Validate using Laravel's validator directly
         $validated = validator($inputData, [
-            'image' => 'required|string', // base64 encoded image
+            'signature' => 'required|string', // base64 encoded image
             'width' => 'nullable|integer|min:100|max:2000',
             'height' => 'nullable|integer|min:50|max:1000',
             'format' => 'nullable|string|in:image/png,image/jpeg,image/webp',

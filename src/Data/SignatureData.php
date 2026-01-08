@@ -14,7 +14,7 @@ use Spatie\LaravelData\Data;
 class SignatureData extends Data
 {
     public function __construct(
-        public string $image,        // base64 encoded image
+        public string $signature,    // base64 encoded image
         public string $timestamp,
         public int $width,
         public int $height,
