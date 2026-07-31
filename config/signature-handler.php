@@ -10,7 +10,7 @@ return [
     |
     */
     'width' => env('SIGNATURE_HANDLER_WIDTH', 600),
-    
+
     /*
     |--------------------------------------------------------------------------
     | Canvas Height
@@ -20,7 +20,7 @@ return [
     |
     */
     'height' => env('SIGNATURE_HANDLER_HEIGHT', 256),
-    
+
     /*
     |--------------------------------------------------------------------------
     | Image Quality
@@ -31,7 +31,7 @@ return [
     |
     */
     'quality' => env('SIGNATURE_HANDLER_QUALITY', 0.85),
-    
+
     /*
     |--------------------------------------------------------------------------
     | Image Format
@@ -43,7 +43,7 @@ return [
     |
     */
     'format' => env('SIGNATURE_HANDLER_FORMAT', 'image/png'),
-    
+
     /*
     |--------------------------------------------------------------------------
     | Line Width
@@ -53,7 +53,7 @@ return [
     |
     */
     'line_width' => env('SIGNATURE_HANDLER_LINE_WIDTH', 2),
-    
+
     /*
     |--------------------------------------------------------------------------
     | Line Color
@@ -63,7 +63,7 @@ return [
     |
     */
     'line_color' => env('SIGNATURE_HANDLER_LINE_COLOR', '#000000'),
-    
+
     /*
     |--------------------------------------------------------------------------
     | Line Cap
@@ -74,7 +74,7 @@ return [
     |
     */
     'line_cap' => env('SIGNATURE_HANDLER_LINE_CAP', 'round'),
-    
+
     /*
     |--------------------------------------------------------------------------
     | Line Join

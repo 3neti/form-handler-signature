@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 
 /**
  * Signature Data
- * 
+ *
  * Represents captured signature image data from canvas drawing.
  */
 class SignatureData extends Data

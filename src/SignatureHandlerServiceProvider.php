@@ -9,7 +9,7 @@ use LBHurtado\FormHandlerSignature\Console\InstallSignatureHandlerCommand;
 
 /**
  * Signature Handler Service Provider
- * 
+ *
  * Registers the signature handler with the form flow system.
  */
 class SignatureHandlerServiceProvider extends ServiceProvider
@@ -24,13 +24,13 @@ class SignatureHandlerServiceProvider extends ServiceProvider
             __DIR__.'/../config/signature-handler.php',
             'signature-handler'
         );
-        
+
         // Register SignatureHandler as singleton
         $this->app->singleton(SignatureHandler::class, function ($app) {
-            return new SignatureHandler();
+            return new SignatureHandler;
         });
     }
-    
+
     /**
      * Bootstrap services
      */
@@ -42,21 +42,21 @@ class SignatureHandlerServiceProvider extends ServiceProvider
                 InstallSignatureHandlerCommand::class,
             ]);
         }
-        
+
         // Publish configuration
         $this->publishes([
             __DIR__.'/../config/signature-handler.php' => config_path('signature-handler.php'),
         ], 'signature-handler-config');
-        
+
         // Publish frontend assets (Vue components)
         $this->publishes([
             __DIR__.'/../stubs/resources/js/pages/form-flow/signature' => resource_path('js/pages/form-flow/signature'),
         ], 'signature-handler-stubs');
-        
+
         // Auto-register handler with form-flow-manager
         $this->registerHandler();
     }
-    
+
     /**
      * Register the signature handler with form-flow-manager
      */
@@ -64,10 +64,10 @@ class SignatureHandlerServiceProvider extends ServiceProvider
     {
         // Get current handlers from config
         $handlers = config('form-flow.handlers', []);
-        
+
         // Add signature handler
         $handlers['signature'] = SignatureHandler::class;
-        
+
         // Update config
         config(['form-flow.handlers' => $handlers]);
     }

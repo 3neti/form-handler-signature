@@ -1,34 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LBHurtado\FormHandlerSignature\Tests;
 
+use LBHurtado\FormHandlerSignature\SignatureHandlerServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use Spatie\LaravelData\LaravelDataServiceProvider;
 
 abstract class TestCase extends BaseTestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
-
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
-            \Spatie\LaravelData\LaravelDataServiceProvider::class,
-            \LBHurtado\FormHandlerSignature\SignatureHandlerServiceProvider::class,
+            LaravelDataServiceProvider::class,
+            SignatureHandlerServiceProvider::class,
         ];
     }
 
-    public function getEnvironmentSetUp($app)
+    public function getEnvironmentSetUp($app): void
     {
         $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
         $app['config']->set('database.default', 'testing');
-        
+        $app['config']->set('inertia.testing.ensure_pages_exist', false);
+
         // Laravel Data configuration
         $app['config']->set('data.validation_strategy', 'only_requests');
         $app['config']->set('data.max_transformation_depth', 6);
         $app['config']->set('data.throw_when_max_transformation_depth_reached', 6);
-        
+
         // Signature handler configuration
         $app['config']->set('signature-handler.width', 600);
         $app['config']->set('signature-handler.height', 256);

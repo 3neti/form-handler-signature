@@ -2,6 +2,24 @@
 
 All notable changes to `form-handler-signature` will be documented in this file.
 
+## v1.2.0 - 2026-07-31
+
+### Added
+- Shared Form Flow screen and action components
+- Default, compact, and immersive UI variants
+- Laravel 12/13 and Inertia 2/3 compatibility matrix
+
+### Fixed
+- Align handler tests and submission payloads on the canonical `signature` field
+
+### Changed
+- Require Form Flow 1.8 or newer
+
+## v1.1.1
+
+### Fixed
+- Return captured artifacts through the collision-safe `signature` field
+
 ## v1.1.0 - 2025-12-24
 
 ### Added
