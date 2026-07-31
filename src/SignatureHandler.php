@@ -12,7 +12,7 @@ use LBHurtado\FormHandlerSignature\Data\SignatureData;
 
 /**
  * Signature Handler
- * 
+ *
  * Captures user's signature using HTML5 canvas drawing.
  * Stores image as base64-encoded string.
  */
@@ -22,12 +22,12 @@ class SignatureHandler implements FormHandlerInterface
     {
         return 'signature';
     }
-    
+
     public function handle(Request $request, FormFlowStepData $step, array $context = []): array
     {
         // Extract data from 'data' key if present (from form submission)
         $inputData = $request->input('data', $request->all());
-        
+
         // Validate using Laravel's validator directly
         $validated = validator($inputData, [
             'signature' => 'required|string', // base64 encoded image
@@ -35,25 +35,25 @@ class SignatureHandler implements FormHandlerInterface
             'height' => 'nullable|integer|min:50|max:1000',
             'format' => 'nullable|string|in:image/png,image/jpeg,image/webp',
         ])->validate();
-        
+
         $validated['timestamp'] = now()->toIso8601String();
         $validated['width'] = $validated['width'] ?? config('signature-handler.width', 600);
         $validated['height'] = $validated['height'] ?? config('signature-handler.height', 256);
         $validated['format'] = $validated['format'] ?? config('signature-handler.format', 'image/png');
-        
+
         return SignatureData::from($validated)->toArray();
     }
-    
+
     public function validate(array $data, array $rules): bool
     {
         // Validation handled in handle() method
         return true;
     }
-    
+
     public function render(FormFlowStepData $step, array $context = [])
     {
         // Renders page at resources/js/pages/form-flow/signature/SignatureCapturePage.vue
-        
+
         return Inertia::render('form-flow/signature/SignatureCapturePage', [
             'flow_id' => $context['flow_id'] ?? null,
             'step' => (string) ($context['step_index'] ?? 0),
@@ -67,9 +67,10 @@ class SignatureHandler implements FormHandlerInterface
                 'line_cap' => config('signature-handler.line_cap', 'round'),
                 'line_join' => config('signature-handler.line_join', 'round'),
             ], $step->config),
+            'ui_variant' => $step->config['ui_variant'] ?? config('form-flow.ui.variant', 'default'),
         ]);
     }
-    
+
     public function getConfigSchema(): array
     {
         return [
@@ -81,6 +82,7 @@ class SignatureHandler implements FormHandlerInterface
             'line_color' => 'nullable|string',
             'line_cap' => 'nullable|in:butt,round,square',
             'line_join' => 'nullable|in:bevel,round,miter',
+            'ui_variant' => 'nullable|string|in:default,compact,immersive',
         ];
     }
 }
