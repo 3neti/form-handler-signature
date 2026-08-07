@@ -28,6 +28,7 @@ export interface SignatureData {
 interface Props {
   config?: SignatureConfig;
   uiVariant?: FormFlowUiVariant | string | null;
+  previewMode?: boolean;
 }
 
 interface Emits {
@@ -38,6 +39,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   config: () => ({}),
   uiVariant: "default",
+  previewMode: false,
 });
 
 const emit = defineEmits<Emits>();

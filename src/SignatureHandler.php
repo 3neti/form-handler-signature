@@ -7,6 +7,7 @@ namespace LBHurtado\FormHandlerSignature;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use LBHurtado\FormFlowManager\Contracts\FormHandlerInterface;
+use LBHurtado\FormFlowManager\Contracts\FormHandlerPreviewInterface;
 use LBHurtado\FormFlowManager\Data\FormFlowStepData;
 use LBHurtado\FormHandlerSignature\Data\SignatureData;
 
@@ -16,7 +17,7 @@ use LBHurtado\FormHandlerSignature\Data\SignatureData;
  * Captures user's signature using HTML5 canvas drawing.
  * Stores image as base64-encoded string.
  */
-class SignatureHandler implements FormHandlerInterface
+class SignatureHandler implements FormHandlerInterface, FormHandlerPreviewInterface
 {
     public function getName(): string
     {
@@ -52,9 +53,17 @@ class SignatureHandler implements FormHandlerInterface
 
     public function render(FormFlowStepData $step, array $context = [])
     {
-        // Renders page at resources/js/pages/form-flow/signature/SignatureCapturePage.vue
+        return Inertia::render('form-flow/signature/SignatureCapturePage', $this->props($step, $context));
+    }
 
-        return Inertia::render('form-flow/signature/SignatureCapturePage', [
+    public function preview(FormFlowStepData $step, array $context = []): array
+    {
+        return ['component' => 'form-flow/signature/SignatureCapturePage', 'props' => $this->props($step, array_merge($context, ['preview_mode' => true]))];
+    }
+
+    protected function props(FormFlowStepData $step, array $context): array
+    {
+        return [
             'flow_id' => $context['flow_id'] ?? null,
             'step' => (string) ($context['step_index'] ?? 0),
             'config' => array_merge([
@@ -68,7 +77,8 @@ class SignatureHandler implements FormHandlerInterface
                 'line_join' => config('signature-handler.line_join', 'round'),
             ], $step->config),
             'ui_variant' => $step->config['ui_variant'] ?? config('form-flow.ui.variant', 'default'),
-        ]);
+            'preview_mode' => (bool) ($context['preview_mode'] ?? false),
+        ];
     }
 
     public function getConfigSchema(): array

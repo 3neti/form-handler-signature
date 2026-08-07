@@ -3,12 +3,23 @@
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use LBHurtado\FormFlowManager\Contracts\FormHandlerInterface;
+use LBHurtado\FormFlowManager\Contracts\FormHandlerPreviewInterface;
 use LBHurtado\FormFlowManager\Data\FormFlowStepData;
 use LBHurtado\FormHandlerSignature\SignatureHandler;
 
 test('implements FormHandlerInterface', function () {
     $handler = new SignatureHandler;
     expect($handler)->toBeInstanceOf(FormHandlerInterface::class);
+});
+
+test('signature preview uses the production screen in inert mode', function () {
+    $preview = (new SignatureHandler)->preview(
+        FormFlowStepData::from(['handler' => 'signature', 'config' => []]),
+    );
+
+    expect(new SignatureHandler)->toBeInstanceOf(FormHandlerPreviewInterface::class)
+        ->and($preview['component'])->toBe('form-flow/signature/SignatureCapturePage')
+        ->and($preview['props']['preview_mode'])->toBeTrue();
 });
 
 test('returns correct handler name', function () {
@@ -189,4 +200,9 @@ test('validates line_cap options in config schema', function () {
     expect($schema['line_cap'])->toContain('butt')
         ->and($schema['line_cap'])->toContain('round')
         ->and($schema['line_cap'])->toContain('square');
+});
+test('published claim screen fails closed in preview mode', function () {
+    $source = file_get_contents(dirname(__DIR__, 2).'/stubs/resources/js/pages/form-flow/signature/SignatureCapturePage.vue');
+
+    expect($source)->toContain('props.preview_mode');
 });
