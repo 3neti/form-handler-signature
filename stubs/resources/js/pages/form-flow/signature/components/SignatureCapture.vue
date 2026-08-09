@@ -25,9 +25,20 @@ export interface SignatureData {
   format: string;
 }
 
+interface PackageVersion {
+  name: string;
+  version: string;
+}
+
 interface Props {
   config?: SignatureConfig;
   uiVariant?: FormFlowUiVariant | string | null;
+  actionPlacement?: "inline" | "bottom" | "bottom_sticky" | string | null;
+  uiLayout?: Record<string, unknown> | null;
+  appName?: string | null;
+  appLogo?: string | null;
+  packageVersions?: PackageVersion[] | Record<string, string> | null;
+  showPackageVersions?: boolean;
   previewMode?: boolean;
 }
 
@@ -39,6 +50,12 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   config: () => ({}),
   uiVariant: "default",
+  actionPlacement: null,
+  uiLayout: null,
+  appName: null,
+  appLogo: null,
+  packageVersions: null,
+  showPackageVersions: false,
   previewMode: false,
 });
 
@@ -157,6 +174,10 @@ onMounted(() => {
     title="Signature Required"
     description="Please sign in the box below using your mouse or touchscreen"
     :variant="uiVariant"
+    :app-name="appName"
+    :app-logo="appLogo"
+    :package-versions="packageVersions"
+    :show-package-versions="showPackageVersions"
   >
     <template #icon>
       <PenTool class="h-5 w-5" />
@@ -198,6 +219,7 @@ onMounted(() => {
 
       <FormFlowActions
         :variant="uiVariant"
+        :action-placement="actionPlacement"
         :primary-disabled="!hasSignature"
         @secondary="handleCancel"
       />
