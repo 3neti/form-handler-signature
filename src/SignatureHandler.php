@@ -99,7 +99,7 @@ class SignatureHandler implements FormHandlerInterface, FormHandlerPreviewInterf
             'line_cap' => 'nullable|in:butt,round,square',
             'line_join' => 'nullable|in:bevel,round,miter',
             'ui_variant' => 'nullable|string|in:default,compact,immersive',
-            'action_placement' => 'nullable|string|in:inline,bottom,bottom_sticky',
+            'action_placement' => 'nullable|string|in:inline,bottom,bottom_sticky,viewport_bottom',
             'ui_layout' => 'nullable|array',
             'app_name' => 'nullable|string',
             'app_logo' => 'nullable|string',
