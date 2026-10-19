@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { Button } from "@/components/ui/button";
 import { PenTool } from "lucide-vue-next";
+import { useFormFlowPresentation } from "@/pages/form-flow/core/components/formFlowPresentation";
+import FormFlowAction from "@/pages/form-flow/core/components/FormFlowAction.vue";
 import FormFlowActions from "@/pages/form-flow/core/components/FormFlowActions.vue";
 import FormFlowScreen from "@/pages/form-flow/core/components/FormFlowScreen.vue";
 import type { FormFlowUiVariant } from "@/pages/form-flow/core/components/formFlowUiVariant";
@@ -33,7 +35,13 @@ interface PackageVersion {
 interface Props {
   config?: SignatureConfig;
   uiVariant?: FormFlowUiVariant | string | null;
-  actionPlacement?: "inline" | "bottom" | "bottom_sticky" | "viewport_bottom" | string | null;
+  actionPlacement?:
+    | "inline"
+    | "bottom"
+    | "bottom_sticky"
+    | "viewport_bottom"
+    | string
+    | null;
   uiLayout?: Record<string, unknown> | null;
   appName?: string | null;
   appLogo?: string | null;
@@ -61,6 +69,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
+const presentation = useFormFlowPresentation();
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const isDrawing = ref(false);
 const hasSignature = ref(false);
@@ -83,7 +92,13 @@ const canvasFrameClass = computed(() =>
 );
 const canvasStyle = computed(() => ({
   width: "100%",
-  height: isImmersive.value ? "100%" : `${height.value}px`,
+  height: presentation.value
+    ? presentation.value.layout.capture_surface === "fill_available"
+      ? "min(50svh, 28rem)"
+      : `${height.value}px`
+    : isImmersive.value
+      ? "100%"
+      : `${height.value}px`,
 }));
 
 let ctx: CanvasRenderingContext2D | null = null;
@@ -108,6 +123,7 @@ function initCanvas() {
 }
 
 function startDrawing(e: MouseEvent | TouchEvent) {
+  if (props.previewMode) return;
   if (!ctx || !canvasRef.value) return;
   isDrawing.value = true;
 
@@ -144,6 +160,7 @@ function clearSignature() {
 }
 
 function handleSubmit() {
+  if (props.previewMode) return;
   if (!canvasRef.value || !hasSignature.value) return;
 
   // Convert canvas to base64 data URL with configured quality
@@ -164,8 +181,34 @@ function handleCancel() {
   emit("cancel");
 }
 
+let observer: ResizeObserver | undefined;
+let frame = 0;
 onMounted(() => {
-  setTimeout(initCanvas, 100);
+  frame = requestAnimationFrame(() => {
+    initCanvas();
+    observer = new ResizeObserver(() => {
+      const canvas = canvasRef.value;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      if (
+        canvas.width === Math.floor(rect.width * devicePixelRatio) &&
+        canvas.height === Math.floor(rect.height * devicePixelRatio)
+      )
+        return;
+      const previous = document.createElement("canvas");
+      previous.width = canvas.width;
+      previous.height = canvas.height;
+      previous.getContext("2d")?.drawImage(canvas, 0, 0);
+      initCanvas();
+      if (hasSignature.value)
+        ctx?.drawImage(previous, 0, 0, rect.width, rect.height);
+    });
+    if (canvasRef.value) observer.observe(canvasRef.value);
+  });
+});
+onBeforeUnmount(() => {
+  cancelAnimationFrame(frame);
+  observer?.disconnect();
 });
 </script>
 
@@ -187,7 +230,7 @@ onMounted(() => {
     <form @submit.prevent="handleSubmit" :class="formClass">
       <!-- Signature Canvas -->
       <div class="flex min-h-0 flex-1 flex-col gap-2">
-        <div :class="canvasFrameClass">
+        <div data-flow-capture-surface :class="canvasFrameClass">
           <canvas
             ref="canvasRef"
             :style="canvasStyle"
@@ -207,18 +250,20 @@ onMounted(() => {
             Sign here
           </div>
         </div>
-        <Button
+        <FormFlowAction
           type="button"
           variant="outline"
           size="sm"
           @click="clearSignature"
           :disabled="!hasSignature"
-        >
-          Clear Signature
-        </Button>
+          role="clear"
+          label="Clear signature"
+        />
       </div>
 
       <FormFlowActions
+        primary-role="continue"
+        secondary-role="cancel"
         :variant="uiVariant"
         :action-placement="actionPlacement"
         :primary-disabled="!hasSignature"

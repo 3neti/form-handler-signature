@@ -20,7 +20,13 @@ interface Props {
   step: string;
   config?: SignatureConfig;
   ui_variant?: FormFlowUiVariant | string | null;
-  action_placement?: "inline" | "bottom" | "bottom_sticky" | "viewport_bottom" | string | null;
+  action_placement?:
+    | "inline"
+    | "bottom"
+    | "bottom_sticky"
+    | "viewport_bottom"
+    | string
+    | null;
   ui_layout?: Record<string, unknown> | null;
   app_name?: string | null;
   app_logo?: string | null;
@@ -47,22 +53,21 @@ function handleCancel() {
 </script>
 
 <template>
-  <FormFlowPresentation :presentation="presentation">
-  <PublicLayout>
-    <SignatureCapture
-      :config="config"
-      :ui-variant="ui_variant"
-      :action-placement="action_placement"
-      :ui-layout="ui_layout"
-      :app-name="app_name"
-      :app-logo="app_logo"
-      :package-versions="package_versions"
-      :show-package-versions="show_package_versions"
-      :preview-mode="preview_mode"
-      @submit="handleSubmit"
-      @cancel="handleCancel"
-    />
-  </PublicLayout>
-
+  <FormFlowPresentation :presentation="presentation" screen="signature">
+    <PublicLayout>
+      <SignatureCapture
+        :config="config"
+        :ui-variant="ui_variant"
+        :action-placement="action_placement"
+        :ui-layout="ui_layout"
+        :app-name="app_name"
+        :app-logo="app_logo"
+        :package-versions="package_versions"
+        :show-package-versions="show_package_versions"
+        :preview-mode="preview_mode"
+        @submit="handleSubmit"
+        @cancel="handleCancel"
+      />
+    </PublicLayout>
   </FormFlowPresentation>
 </template>

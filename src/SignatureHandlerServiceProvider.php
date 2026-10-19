@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace LBHurtado\FormHandlerSignature;
 
 use Illuminate\Support\ServiceProvider;
+use LBHurtado\FormFlowManager\Services\FormFlowPresentationResolver;
 use LBHurtado\FormHandlerSignature\Console\InstallSignatureHandlerCommand;
 
 /**
@@ -36,6 +37,8 @@ class SignatureHandlerServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        app(FormFlowPresentationResolver::class)->registerScreens(['signature']);
+
         // Register console commands
         if ($this->app->runningInConsole()) {
             $this->commands([
