@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import FormFlowPresentation from "@/pages/form-flow/core/components/FormFlowPresentation.vue";
+import type { FormFlowPresentation as PresentationPolicy } from "@/pages/form-flow/core/components/formFlowPresentation";
 import { router } from "@inertiajs/vue3";
 import SignatureCapture, {
   type SignatureData,
@@ -13,6 +15,7 @@ interface PackageVersion {
 }
 
 interface Props {
+  presentation?: PresentationPolicy | null;
   flow_id: string;
   step: string;
   config?: SignatureConfig;
@@ -44,6 +47,7 @@ function handleCancel() {
 </script>
 
 <template>
+  <FormFlowPresentation :presentation="presentation">
   <PublicLayout>
     <SignatureCapture
       :config="config"
@@ -59,4 +63,6 @@ function handleCancel() {
       @cancel="handleCancel"
     />
   </PublicLayout>
+
+  </FormFlowPresentation>
 </template>
