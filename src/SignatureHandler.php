@@ -19,6 +19,8 @@ use LBHurtado\FormHandlerSignature\Data\SignatureData;
  */
 class SignatureHandler implements FormHandlerInterface, FormHandlerPreviewInterface
 {
+    private const MAX_IMAGE_DIMENSION = 4096;
+
     public function getName(): string
     {
         return 'signature';
@@ -30,12 +32,20 @@ class SignatureHandler implements FormHandlerInterface, FormHandlerPreviewInterf
         $inputData = $request->input('data', $request->all());
 
         // Validate using Laravel's validator directly
-        $validated = validator($inputData, [
+        $validator = validator($inputData, [
             'signature' => 'required|string', // base64 encoded image
-            'width' => 'nullable|integer|min:100|max:4096',
-            'height' => 'nullable|integer|min:50|max:4096',
+            'width' => 'nullable|integer|min:100|max:'.self::MAX_IMAGE_DIMENSION,
+            'height' => 'nullable|integer|min:50|max:'.self::MAX_IMAGE_DIMENSION,
             'format' => 'nullable|string|in:image/png,image/jpeg,image/webp',
-        ])->validate();
+        ]);
+
+        if ($validator->fails()) {
+            logger()->warning('Signature submission validation failed', [
+                'fields' => array_keys($validator->errors()->messages()),
+            ]);
+        }
+
+        $validated = $validator->validate();
 
         $validated['timestamp'] = now()->toIso8601String();
         $validated['width'] = $validated['width'] ?? config('signature-handler.width', 600);
@@ -75,7 +85,9 @@ class SignatureHandler implements FormHandlerInterface, FormHandlerPreviewInterf
                 'line_color' => config('signature-handler.line_color', '#000000'),
                 'line_cap' => config('signature-handler.line_cap', 'round'),
                 'line_join' => config('signature-handler.line_join', 'round'),
-            ], $step->config),
+            ], $step->config, [
+                'max_image_dimension' => self::MAX_IMAGE_DIMENSION,
+            ]),
             'ui_variant' => $step->config['ui_variant'] ?? config('form-flow.ui.variant', 'default'),
             'action_placement' => $step->config['action_placement'] ?? null,
             'ui_layout' => $step->config['ui_layout'] ?? [],

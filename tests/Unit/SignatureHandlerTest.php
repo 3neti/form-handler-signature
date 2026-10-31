@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use LBHurtado\FormFlowManager\Contracts\FormHandlerInterface;
 use LBHurtado\FormFlowManager\Contracts\FormHandlerPreviewInterface;
@@ -81,6 +82,29 @@ test('accepts a high-density mobile signature canvas', function () {
     $result = (new SignatureHandler)->handle($request, FormFlowStepData::from(['handler' => 'signature', 'config' => []]));
 
     expect($result['width'])->toBe(1206)->and($result['height'])->toBe(1131);
+});
+
+test('exposes the enforced image bound to the capture screen', function () {
+    $preview = (new SignatureHandler)->preview(FormFlowStepData::from([
+        'handler' => 'signature',
+        'config' => ['max_image_dimension' => 99999],
+    ]));
+
+    expect($preview['props']['config']['max_image_dimension'])->toBe(4096);
+});
+
+test('records only field names when validation fails', function () {
+    Log::shouldReceive('warning')
+        ->once()
+        ->with('Signature submission validation failed', ['fields' => ['height']]);
+
+    $request = Request::create('/test', 'POST', ['data' => [
+        'signature' => 'data:image/png;base64,private',
+        'height' => 4097,
+    ]]);
+
+    expect(fn () => (new SignatureHandler)->handle($request, FormFlowStepData::from(['handler' => 'signature', 'config' => []])))
+        ->toThrow(ValidationException::class);
 });
 
 test('validates width constraints', function () {

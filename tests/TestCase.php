@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace LBHurtado\FormHandlerSignature\Tests;
 
+use LBHurtado\FormFlowManager\FormFlowServiceProvider;
 use LBHurtado\FormHandlerSignature\SignatureHandlerServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Spatie\LaravelData\LaravelDataServiceProvider;
@@ -14,6 +15,7 @@ abstract class TestCase extends BaseTestCase
     {
         return [
             LaravelDataServiceProvider::class,
+            FormFlowServiceProvider::class,
             SignatureHandlerServiceProvider::class,
         ];
     }

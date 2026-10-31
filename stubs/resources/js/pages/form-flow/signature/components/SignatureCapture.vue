@@ -7,6 +7,7 @@ import FormFlowAction from "@/pages/form-flow/core/components/FormFlowAction.vue
 import FormFlowActions from "@/pages/form-flow/core/components/FormFlowActions.vue";
 import FormFlowScreen from "@/pages/form-flow/core/components/FormFlowScreen.vue";
 import type { FormFlowUiVariant } from "@/pages/form-flow/core/components/formFlowUiVariant";
+import { canvasDimensions } from "./canvasDimensions";
 
 export interface SignatureConfig {
   width?: number;
@@ -17,6 +18,7 @@ export interface SignatureConfig {
   line_color?: string;
   line_cap?: "butt" | "round" | "square";
   line_join?: "bevel" | "round" | "miter";
+  max_image_dimension?: number;
 }
 
 export interface SignatureData {
@@ -48,6 +50,8 @@ interface Props {
   packageVersions?: PackageVersion[] | Record<string, string> | null;
   showPackageVersions?: boolean;
   previewMode?: boolean;
+  processing?: boolean;
+  error?: string | null;
 }
 
 interface Emits {
@@ -65,6 +69,8 @@ const props = withDefaults(defineProps<Props>(), {
   packageVersions: null,
   showPackageVersions: false,
   previewMode: false,
+  processing: false,
+  error: null,
 });
 
 const emit = defineEmits<Emits>();
@@ -111,9 +117,23 @@ function initCanvas() {
 
   // Set canvas size with device pixel ratio for high-DPI displays
   const rect = canvasRef.value.getBoundingClientRect();
-  canvasRef.value.width = rect.width * window.devicePixelRatio;
-  canvasRef.value.height = rect.height * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  if (!rect.width || !rect.height) return;
+  const dimensions = canvasDimensions(
+    rect.width,
+    rect.height,
+    window.devicePixelRatio,
+    props.config.max_image_dimension ?? 4096,
+  );
+  canvasRef.value.width = dimensions.width;
+  canvasRef.value.height = dimensions.height;
+  ctx.setTransform(
+    dimensions.width / rect.width,
+    0,
+    0,
+    dimensions.height / rect.height,
+    0,
+    0,
+  );
 
   // Set drawing style from config
   ctx.strokeStyle = lineColor.value;
@@ -123,7 +143,7 @@ function initCanvas() {
 }
 
 function startDrawing(e: MouseEvent | TouchEvent) {
-  if (props.previewMode) return;
+  if (props.previewMode || props.processing) return;
   if (!ctx || !canvasRef.value) return;
   isDrawing.value = true;
 
@@ -160,7 +180,7 @@ function clearSignature() {
 }
 
 function handleSubmit() {
-  if (props.previewMode) return;
+  if (props.previewMode || props.processing) return;
   if (!canvasRef.value || !hasSignature.value) return;
 
   // Convert canvas to base64 data URL with configured quality
@@ -178,6 +198,7 @@ function handleSubmit() {
 }
 
 function handleCancel() {
+  if (props.processing) return;
   emit("cancel");
 }
 
@@ -190,9 +211,16 @@ onMounted(() => {
       const canvas = canvasRef.value;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const dimensions = canvasDimensions(
+        rect.width,
+        rect.height,
+        window.devicePixelRatio,
+        props.config.max_image_dimension ?? 4096,
+      );
       if (
-        canvas.width === Math.floor(rect.width * devicePixelRatio) &&
-        canvas.height === Math.floor(rect.height * devicePixelRatio)
+        canvas.width === dimensions.width &&
+        canvas.height === dimensions.height
       )
         return;
       const previous = document.createElement("canvas");
@@ -228,6 +256,13 @@ onBeforeUnmount(() => {
     </template>
 
     <form @submit.prevent="handleSubmit" :class="formClass">
+      <p
+        v-if="error"
+        role="alert"
+        class="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200"
+      >
+        {{ error }}
+      </p>
       <!-- Signature Canvas -->
       <div class="flex min-h-0 flex-1 flex-col gap-2">
         <div data-flow-capture-surface :class="canvasFrameClass">
@@ -255,7 +290,7 @@ onBeforeUnmount(() => {
           variant="outline"
           size="sm"
           @click="clearSignature"
-          :disabled="!hasSignature"
+          :disabled="!hasSignature || processing"
           role="clear"
           label="Clear signature"
         />
@@ -266,7 +301,7 @@ onBeforeUnmount(() => {
         secondary-role="cancel"
         :variant="uiVariant"
         :action-placement="actionPlacement"
-        :primary-disabled="!hasSignature"
+        :primary-disabled="!hasSignature || processing"
         @secondary="handleCancel"
       />
     </form>
