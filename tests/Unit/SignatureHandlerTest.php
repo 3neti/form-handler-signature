@@ -70,6 +70,19 @@ test('accepts valid base64 image', function () {
         ->and($result)->toHaveKey('timestamp');
 });
 
+test('accepts a high-density mobile signature canvas', function () {
+    $request = Request::create('/test', 'POST', ['data' => [
+        'signature' => 'data:image/png;base64,test',
+        'width' => 1206,
+        'height' => 1131,
+        'format' => 'image/png',
+    ]]);
+
+    $result = (new SignatureHandler)->handle($request, FormFlowStepData::from(['handler' => 'signature', 'config' => []]));
+
+    expect($result['width'])->toBe(1206)->and($result['height'])->toBe(1131);
+});
+
 test('validates width constraints', function () {
     $handler = new SignatureHandler;
     $request = Request::create('/test', 'POST', [
@@ -89,7 +102,7 @@ test('validates height constraints', function () {
     $request = Request::create('/test', 'POST', [
         'data' => [
             'signature' => 'data:image/png;base64,test',
-            'height' => 1500, // Too large (max: 1000)
+            'height' => 4097, // Too large (max: 4096)
         ],
     ]);
     $step = FormFlowStepData::from(['handler' => 'signature', 'config' => []]);

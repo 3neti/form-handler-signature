@@ -32,8 +32,8 @@ class SignatureHandler implements FormHandlerInterface, FormHandlerPreviewInterf
         // Validate using Laravel's validator directly
         $validated = validator($inputData, [
             'signature' => 'required|string', // base64 encoded image
-            'width' => 'nullable|integer|min:100|max:2000',
-            'height' => 'nullable|integer|min:50|max:1000',
+            'width' => 'nullable|integer|min:100|max:4096',
+            'height' => 'nullable|integer|min:50|max:4096',
             'format' => 'nullable|string|in:image/png,image/jpeg,image/webp',
         ])->validate();
 
@@ -84,6 +84,7 @@ class SignatureHandler implements FormHandlerInterface, FormHandlerPreviewInterf
             'package_versions' => $step->config['package_versions'] ?? [],
             'show_package_versions' => (bool) ($step->config['show_package_versions'] ?? false),
             'preview_mode' => (bool) ($context['preview_mode'] ?? false),
+            'presentation' => $step->config['presentation'] ?? null,
         ];
     }
 

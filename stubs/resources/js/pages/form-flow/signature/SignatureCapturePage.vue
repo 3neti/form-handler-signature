@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import FormFlowPresentation from "@/pages/form-flow/core/components/FormFlowPresentation.vue";
+import type { FormFlowPresentation as PresentationPolicy } from "@/pages/form-flow/core/components/formFlowPresentation";
 import { router } from "@inertiajs/vue3";
 import SignatureCapture, {
   type SignatureData,
@@ -13,11 +15,18 @@ interface PackageVersion {
 }
 
 interface Props {
+  presentation?: PresentationPolicy | null;
   flow_id: string;
   step: string;
   config?: SignatureConfig;
   ui_variant?: FormFlowUiVariant | string | null;
-  action_placement?: "inline" | "bottom" | "bottom_sticky" | "viewport_bottom" | string | null;
+  action_placement?:
+    | "inline"
+    | "bottom"
+    | "bottom_sticky"
+    | "viewport_bottom"
+    | string
+    | null;
   ui_layout?: Record<string, unknown> | null;
   app_name?: string | null;
   app_logo?: string | null;
@@ -44,19 +53,21 @@ function handleCancel() {
 </script>
 
 <template>
-  <PublicLayout>
-    <SignatureCapture
-      :config="config"
-      :ui-variant="ui_variant"
-      :action-placement="action_placement"
-      :ui-layout="ui_layout"
-      :app-name="app_name"
-      :app-logo="app_logo"
-      :package-versions="package_versions"
-      :show-package-versions="show_package_versions"
-      :preview-mode="preview_mode"
-      @submit="handleSubmit"
-      @cancel="handleCancel"
-    />
-  </PublicLayout>
+  <FormFlowPresentation :presentation="presentation" screen="signature">
+    <PublicLayout>
+      <SignatureCapture
+        :config="config"
+        :ui-variant="ui_variant"
+        :action-placement="action_placement"
+        :ui-layout="ui_layout"
+        :app-name="app_name"
+        :app-logo="app_logo"
+        :package-versions="package_versions"
+        :show-package-versions="show_package_versions"
+        :preview-mode="preview_mode"
+        @submit="handleSubmit"
+        @cancel="handleCancel"
+      />
+    </PublicLayout>
+  </FormFlowPresentation>
 </template>
