@@ -8,6 +8,8 @@ import SignatureCapture, {
 } from "./components/SignatureCapture.vue";
 import PublicLayout from "@/layouts/PublicLayout.vue";
 import type { FormFlowUiVariant } from "@/pages/form-flow/core/components/formFlowUiVariant";
+import { ref } from "vue";
+import { signatureVisitOptions } from "./components/signatureVisitOptions";
 
 interface PackageVersion {
   name: string;
@@ -36,13 +38,28 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const processing = ref(false);
+const error = ref<string | null>(null);
 
 function handleSubmit(signatureData: SignatureData) {
-  if (props.preview_mode) return;
+  if (props.preview_mode || processing.value) return;
+  processing.value = true;
+  error.value = null;
   // Submit to FormFlowController
-  router.post(`/form-flow/${props.flow_id}/step/${props.step}`, {
-    data: signatureData as unknown as Record<string, any>,
-  });
+  router.post(
+    `/form-flow/${props.flow_id}/step/${props.step}`,
+    {
+      data: signatureData as unknown as Record<string, any>,
+    },
+    signatureVisitOptions(
+      (message) => {
+        error.value = message;
+      },
+      () => {
+        processing.value = false;
+      },
+    ),
+  );
 }
 
 function handleCancel() {
@@ -65,6 +82,8 @@ function handleCancel() {
         :package-versions="package_versions"
         :show-package-versions="show_package_versions"
         :preview-mode="preview_mode"
+        :processing="processing"
+        :error="error"
         @submit="handleSubmit"
         @cancel="handleCancel"
       />
